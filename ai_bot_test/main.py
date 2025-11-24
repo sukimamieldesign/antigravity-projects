@@ -203,7 +203,6 @@ class App(ctk.CTk):
     def start_generation(self):
         text = self.input_box.get("0.0", "end").strip()
         if not text and self.current_image is None:
-            tk.messagebox.showwarning("警告", "入力欄が空じゃよ。")
             return
 
         self.btn_generate.configure(state="disabled", text="儀式中...")
@@ -345,8 +344,7 @@ class App(ctk.CTk):
                 original_text = self.btn_copy_img.cget("text")
                 self.btn_copy_img.configure(text="コピー済！")
                 self.after(1000, lambda: self.btn_copy_img.configure(text=original_text))
-        elif not silent:
-            tk.messagebox.showwarning("警告", "画像がないわい。")
+
 
     def copy_input_to_clipboard(self):
         text = self.input_box.get("0.0", "end").strip()
