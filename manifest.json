@@ -6,8 +6,10 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "sidePanel"
+    "sidePanel",
+    "storage"
   ],
+  "options_page": "options.html",
   "host_permissions": [
     "<all_urls>"
   ],

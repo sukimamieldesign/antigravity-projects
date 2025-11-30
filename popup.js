@@ -5,11 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const status = document.getElementById('status');
 
     // ユーティリティ: ステータス表示
-    const showStatus = (msg, duration = 2000) => {
+    const showStatus = (msg, duration = 2000, isError = false) => {
         status.textContent = msg;
-        setTimeout(() => {
-            status.textContent = '';
-        }, duration);
+        status.style.color = isError ? '#ff6b6b' : '#888'; // エラーなら赤色
+
+        // エラーの場合は自動で消さない
+        if (isError) {
+            // 何もしない（永続表示）
+        } else {
+            setTimeout(() => {
+                status.textContent = '';
+            }, duration);
+        }
     };
 
     // 1. ポップアップを開いた時に、自動で選択範囲を取得を試みる
@@ -48,9 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ボタン: ページに貼り付け
     btnPaste.addEventListener('click', () => {
-        const textToPaste = editor.value;
-        if (!textToPaste) {
-            showStatus('テキストが空です');
+        // 修正結果があればそれを、なければ元のテキストを貼り付ける
+        const textToPaste = resultEditor.value || editor.value;
+
+        if (!textToPaste || textToPaste === "生成中..." || textToPaste === "エラーが発生しました") {
+            showStatus('貼り付けるテキストがありません');
             return;
         }
 
@@ -249,5 +258,114 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(removeBtn);
         div.appendChild(pasteBtn);
         capturedImagesContainer.prepend(div);
+    }
+
+    // --- AI機能 ---
+    const btnAiRun = document.getElementById('btn-ai-run');
+    const aiModeSelect = document.getElementById('ai-mode');
+    const resultEditor = document.getElementById('result-editor');
+    const btnCopyResult = document.getElementById('btn-copy-result');
+
+    // 結果コピーボタン
+    btnCopyResult.addEventListener('click', async () => {
+        const text = resultEditor.value;
+        if (!text) return;
+
+        try {
+            await navigator.clipboard.writeText(text);
+            showStatus('結果をコピーしました！');
+        } catch (err) {
+            console.error(err);
+            showStatus('コピー失敗');
+        }
+    });
+
+    btnAiRun.addEventListener('click', async () => {
+        const text = editor.value;
+        if (!text) {
+            showStatus('テキストを入力してください');
+            return;
+        }
+
+        // APIキーの取得
+        const { geminiApiKey } = await chrome.storage.local.get('geminiApiKey');
+        if (!geminiApiKey) {
+            showStatus('設定画面でAPIキーを設定してください', 3000);
+            // オプションページを開く
+            chrome.runtime.openOptionsPage();
+            return;
+        }
+
+        const mode = aiModeSelect.value;
+        let prompt = "";
+
+        switch (mode) {
+            case "fix_grammar":
+                prompt = "以下のテキストの誤字脱字を修正し、自然な日本語に直してください。結果のみを出力してください:\n\n" + text;
+                break;
+            case "polite":
+                prompt = "以下のテキストを、ビジネスメールでも使えるような丁寧な敬語に書き換えてください。結果のみを出力してください:\n\n" + text;
+                break;
+            case "summarize":
+                prompt = "以下のテキストを簡潔に要約してください:\n\n" + text;
+                break;
+            case "translate_en":
+                prompt = "Translate the following text into natural English:\n\n" + text;
+                break;
+            case "translate_ja":
+                prompt = "以下のテキストを自然な日本語に翻訳してください:\n\n" + text;
+                break;
+        }
+
+        // ローディング表示
+        const originalBtnText = btnAiRun.textContent;
+        btnAiRun.textContent = "生成中...";
+        btnAiRun.disabled = true;
+        resultEditor.value = "生成中..."; // 結果エリアにも表示
+
+        try {
+            const result = await callGeminiApi(geminiApiKey, prompt);
+            if (result) {
+                resultEditor.value = result; // 結果エリアに表示
+                showStatus('AI修正完了！');
+            } else {
+                resultEditor.value = "";
+                showStatus('生成に失敗しました');
+            }
+        } catch (error) {
+            console.error(error);
+            resultEditor.value = "エラーが発生しました";
+            showStatus('エラー: ' + error.message, 0, true);
+        } finally {
+            btnAiRun.textContent = originalBtnText;
+            btnAiRun.disabled = false;
+        }
+    });
+
+    async function callGeminiApi(apiKey, prompt) {
+        // ユーザー指定のモデルに変更
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'API Error');
+        }
+
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     }
 });

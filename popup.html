@@ -18,7 +18,27 @@
         <button id="btn-get-selection" class="secondary">選択範囲を取得</button>
         <button id="btn-capture" class="secondary">📷 範囲スクショ</button>
       </div>
-      <textarea id="editor" placeholder="ここにテキストが表示されます..."></textarea>
+
+      <div class="ai-tools">
+        <select id="ai-mode">
+          <option value="fix_grammar">誤字脱字・文法修正</option>
+          <option value="polite">丁寧な言葉遣いに</option>
+          <option value="summarize">要約する</option>
+          <option value="translate_en">英語に翻訳</option>
+          <option value="translate_ja">日本語に翻訳</option>
+        </select>
+        <button id="btn-ai-run" class="ai-btn">✨ AI修正</button>
+      </div>
+
+      <textarea id="editor" placeholder="ここに入力したテキストをAIが修正します..."></textarea>
+
+      <div class="output-area">
+        <div class="output-header">
+          <label>AI修正結果:</label>
+          <button id="btn-copy-result" class="icon-btn" title="結果をコピー">📋</button>
+        </div>
+        <textarea id="result-editor" placeholder="ここに修正結果が表示されます..." readonly></textarea>
+      </div>
       <div id="captured-images"></div>
       <div class="actions">
         <button id="btn-paste" class="primary">ページに貼り付け</button>

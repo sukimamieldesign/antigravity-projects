@@ -31,19 +31,63 @@ textarea {
   flex-grow: 1;
   width: 100%;
   resize: none;
-  padding: 12px;
-  border: 1px solid #333;
-  border-radius: 8px;
-  font-family: 'Consolas', 'Monaco', monospace;
-  /* コードっぽく等幅フォントに */
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
   box-sizing: border-box;
-  margin-bottom: 16px;
-  background-color: #2d2d2d;
-  /* エディタ部分の背景 */
-  color: #f0f0f0;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
+  height: 120px;
+  /* 高さを固定 */
+}
+
+.output-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-bottom: 12px;
+}
+
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.output-header label {
+  font-size: 12px;
+  color: #888;
+  font-weight: bold;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#result-editor {
+  background-color: #252526;
+  /* 入力欄より少し暗くして区別 */
+  border-color: #444;
+  color: #a0a0a0;
+  margin-bottom: 0;
+}
+
+#result-editor:focus {
+  color: #fff;
+  border-color: #0078d4;
 }
 
 textarea:focus {
@@ -118,6 +162,45 @@ button.secondary {
 button.secondary:hover {
   background-color: #444;
   border-color: #555;
+}
+
+/* AIツールバー */
+.ai-tools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#ai-mode {
+  flex-grow: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #e0e0e0;
+  font-size: 13px;
+}
+
+.ai-btn {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.ai-btn:hover {
+  opacity: 0.9;
+}
+
+.ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* キャプチャ画像のスタイル */
