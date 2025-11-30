@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Editor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Quick Editor</h1>
+    </header>
+    <main>
+      <div class="actions">
+        <button id="btn-get-selection" class="secondary">選択範囲を取得</button>
+        <button id="btn-capture" class="secondary">📷 範囲スクショ</button>
+      </div>
+      <textarea id="editor" placeholder="ここにテキストが表示されます..."></textarea>
+      <div id="captured-images"></div>
+      <div class="actions">
+        <button id="btn-paste" class="primary">ページに貼り付け</button>
+      </div>
+    </main>
+    <footer>
+      <span id="status"></span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>
