@@ -38,9 +38,27 @@ textarea {
   font-size: 14px;
   line-height: 1.5;
   box-sizing: border-box;
-  margin-bottom: 12px;
-  height: 120px;
-  /* 高さを固定 */
+  margin-bottom: 8px;
+}
+
+#editor {
+  height: 80px;
+}
+
+#instruction-editor {
+  height: 60px;
+  border-color: #8ab4f8;
+  /* 少し色を変えて目立たせる */
+  background-color: #f0f8ff;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  #instruction-editor {
+    background-color: #1e2a38;
+    border-color: #4a6f9e;
+    color: #e0e0e0;
+  }
 }
 
 .output-area {

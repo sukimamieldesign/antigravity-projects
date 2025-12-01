@@ -264,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAiRun = document.getElementById('btn-ai-run');
     const aiModeSelect = document.getElementById('ai-mode');
     const resultEditor = document.getElementById('result-editor');
+    const instructionEditor = document.getElementById('instruction-editor'); // 追加
     const btnCopyResult = document.getElementById('btn-copy-result');
 
     // 結果コピーボタン
@@ -282,8 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnAiRun.addEventListener('click', async () => {
         const text = editor.value;
-        if (!text) {
-            showStatus('テキストを入力してください');
+        const instruction = instructionEditor.value; // 追加指示
+
+        if (!text && !instruction) {
+            showStatus('テキストまたは指示を入力してください');
             return;
         }
 
@@ -300,6 +303,34 @@ document.addEventListener('DOMContentLoaded', () => {
         let prompt = "";
 
         switch (mode) {
+            case "x_post":
+                prompt = `
+あなたはSNS運用のプロフェッショナルです。
+以下の【入力文】を元に、X（旧Twitter）の投稿文を作成してください。
+必ず【追加指示】の内容を反映し、魅力的な投稿にしてください。
+
+# 制約事項
+- 140文字以内に収めること
+- 適切な改行を入れること
+- 必要に応じてハッシュタグを使うこと
+
+【入力文】:
+${text}
+
+【追加指示】:
+${instruction}
+
+出力は投稿文のみにしてください。
+`.trim();
+                break;
+            case "free_ask":
+                // 素通しモード：入力テキストをそのまま送る
+                // 追加指示がある場合はそれも合わせる
+                prompt = text;
+                if (instruction) {
+                    prompt += "\n\n" + instruction;
+                }
+                break;
             case "fix_grammar":
                 prompt = "以下のテキストの誤字脱字を修正し、自然な日本語に直してください。結果のみを出力してください:\n\n" + text;
                 break;

@@ -21,6 +21,8 @@
 
       <div class="ai-tools">
         <select id="ai-mode">
+          <option value="x_post">🐦 X投稿作成</option>
+          <option value="free_ask">🤖 自由質問 (素通し)</option>
           <option value="fix_grammar">誤字脱字・文法修正</option>
           <option value="polite">丁寧な言葉遣いに</option>
           <option value="summarize">要約する</option>
@@ -30,7 +32,9 @@
         <button id="btn-ai-run" class="ai-btn">✨ AI修正</button>
       </div>
 
-      <textarea id="editor" placeholder="ここに入力したテキストをAIが修正します..."></textarea>
+      <textarea id="editor" placeholder="【入力文】ここに元のテキストを入力..."></textarea>
+
+      <textarea id="instruction-editor" placeholder="【追加指示】もっと明るく、ハッシュタグをつけて、など..."></textarea>
 
       <div class="output-area">
         <div class="output-header">
