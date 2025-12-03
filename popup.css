@@ -101,6 +101,8 @@ textarea {
   border-color: #444;
   color: #a0a0a0;
   margin-bottom: 0;
+  height: 200px;
+  /* 高さを指定 */
 }
 
 #result-editor:focus {

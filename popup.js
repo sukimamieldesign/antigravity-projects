@@ -281,6 +281,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ショートカットキーの実装 (Ctrl+Enter or Cmd+Enter)
+    const handleShortcut = (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault(); // 改行が入らないようにする
+            btnAiRun.click();   // AI実行ボタンを押す
+        }
+    };
+
+    editor.addEventListener('keydown', handleShortcut);
+    instructionEditor.addEventListener('keydown', handleShortcut);
+
+    // 直前の会話履歴を保持する変数（素通しモード用）
+    let lastConversation = null;
+
     btnAiRun.addEventListener('click', async () => {
         const text = editor.value;
         const instruction = instructionEditor.value; // 追加指示
@@ -301,6 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mode = aiModeSelect.value;
         let prompt = "";
+        let history = []; // APIに送る履歴
+
+        // モードが変わったら履歴をリセットするなどの制御も可能だが、
+        // 今回は「素通しモード」以外なら履歴を使わない（リセットはしないが送らない）方針
+        if (mode !== "free_ask") {
+            lastConversation = null; // 他のモードを使ったら文脈を切る
+        }
 
         switch (mode) {
             case "x_post":
@@ -325,10 +346,17 @@ ${instruction}
                 break;
             case "free_ask":
                 // 素通しモード：入力テキストをそのまま送る
-                // 追加指示がある場合はそれも合わせる
                 prompt = text;
                 if (instruction) {
                     prompt += "\n\n" + instruction;
+                }
+
+                // 直前の履歴があればセットする
+                if (lastConversation) {
+                    history = [
+                        { role: "user", parts: [{ text: lastConversation.user }] },
+                        { role: "model", parts: [{ text: lastConversation.model }] }
+                    ];
                 }
                 break;
             case "fix_grammar":
@@ -355,10 +383,19 @@ ${instruction}
         resultEditor.value = "生成中..."; // 結果エリアにも表示
 
         try {
-            const result = await callGeminiApi(geminiApiKey, prompt);
+            // 履歴(history)も渡すように変更
+            const result = await callGeminiApi(geminiApiKey, prompt, history);
             if (result) {
                 resultEditor.value = result; // 結果エリアに表示
                 showStatus('AI修正完了！');
+
+                // 素通しモードなら、今回のやり取りを履歴として保存
+                if (mode === "free_ask") {
+                    lastConversation = {
+                        user: prompt,
+                        model: result
+                    };
+                }
             } else {
                 resultEditor.value = "";
                 showStatus('生成に失敗しました');
@@ -373,9 +410,19 @@ ${instruction}
         }
     });
 
-    async function callGeminiApi(apiKey, prompt) {
+    // history引数を追加
+    async function callGeminiApi(apiKey, prompt, history = []) {
         // ユーザー指定のモデルに変更
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+        // 現在のプロンプトをメッセージ形式に変換
+        const currentMessage = {
+            role: "user",
+            parts: [{ text: prompt }]
+        };
+
+        // 履歴と現在のメッセージを結合
+        const contents = [...history, currentMessage];
 
         const response = await fetch(url, {
             method: 'POST',
@@ -383,11 +430,7 @@ ${instruction}
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
+                contents: contents
             })
         });
 
