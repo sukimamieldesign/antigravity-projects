@@ -25,6 +25,16 @@ header h1 {
   text-align: center;
   font-weight: 500;
   letter-spacing: 0.5px;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#app-version {
+  font-size: 11px;
+  color: #888;
+  font-weight: normal;
 }
 
 textarea {

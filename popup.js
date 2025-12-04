@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const editor = document.getElementById('editor');
-    const btnGetSelection = document.getElementById('btn-get-selection');
+    // capturedImagesContainerの宣言を削除（下で宣言されているため）
     const btnPaste = document.getElementById('btn-paste');
     const status = document.getElementById('status');
+
+    // バージョン表示 (version.jsで定義されたAPP_VERSIONを使用)
+    if (typeof APP_VERSION !== 'undefined') {
+        document.getElementById('app-version').textContent = APP_VERSION + "版";
+    }
 
     // ユーティリティ: ステータス表示
     const showStatus = (msg, duration = 2000, isError = false) => {
@@ -326,14 +331,21 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (mode) {
             case "x_post":
                 prompt = `
-あなたはSNS運用のプロフェッショナルです。
-以下の【入力文】を元に、X（旧Twitter）の投稿文を作成してください。
-必ず【追加指示】の内容を反映し、魅力的な投稿にしてください。
+あなたは以下の【投稿スタイル】を持つユーザーの専属ライターです。
+【入力文】を元に、このユーザーらしいX（旧Twitter）の投稿文を作成してください。
+【追加指示】があれば、それも反映してください。
+
+# 投稿スタイル
+- 前向きでポジティブなメッセージを発信する
+- IT技術や現場の知見を、明るく共有するスタイル
+- 読者が「なるほど」「やってみよう」と思えるような口調
 
 # 制約事項
 - 140文字以内に収めること
 - 適切な改行を入れること
-- 必要に応じてハッシュタグを使うこと
+- 以下のハッシュタグを文末に必ず含めること
+  - #it祈祷師
+  - #現場からは以上です
 
 【入力文】:
 ${text}
