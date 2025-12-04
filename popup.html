@@ -34,12 +34,15 @@
 
       <textarea id="editor" placeholder="【入力文】ここに元のテキストを入力..."></textarea>
 
-      <textarea id="instruction-editor" placeholder="【追加指示】もっと明るく、ハッシュタグをつけて、など..."></textarea>
+      <textarea id="instruction-editor" placeholder="【追加指示】もっと明るく、ハッシュタグをつけて、など...">140文字以内で回答してください</textarea>
 
       <div class="output-area">
         <div class="output-header">
           <label>AI修正結果:</label>
-          <button id="btn-copy-result" class="icon-btn" title="結果をコピー">📋</button>
+          <div class="button-group">
+            <button id="btn-clear-all" class="icon-btn" title="全てクリア">🗑️</button>
+            <button id="btn-copy-result" class="icon-btn" title="結果をコピー">📋</button>
+          </div>
         </div>
         <textarea id="result-editor" placeholder="ここに修正結果が表示されます..." readonly></textarea>
       </div>
@@ -50,6 +53,7 @@
     </main>
 
     <footer>
+      <span id="status"></span>
       &copy; 2024 Text Editor Extension
     </footer>
   </div>

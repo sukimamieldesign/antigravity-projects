@@ -91,6 +91,11 @@ textarea {
   font-weight: bold;
 }
 
+.button-group {
+  display: flex;
+  gap: 4px;
+}
+
 .icon-btn {
   background: none;
   border: none;

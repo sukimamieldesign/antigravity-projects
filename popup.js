@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const editor = document.getElementById('editor');
-    // capturedImagesContainerの宣言を削除（下で宣言されているため）
+    const capturedImagesContainer = document.getElementById('captured-images');
+    const btnGetSelection = document.getElementById('btn-get-selection'); // 追加
     const btnPaste = document.getElementById('btn-paste');
     const status = document.getElementById('status');
 
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- キャプチャ機能 ---
     const btnCapture = document.getElementById('btn-capture');
-    const capturedImagesContainer = document.getElementById('captured-images');
+    // capturedImagesContainerは冒頭で宣言済み（にする）
 
     btnCapture.addEventListener('click', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -271,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultEditor = document.getElementById('result-editor');
     const instructionEditor = document.getElementById('instruction-editor'); // 追加
     const btnCopyResult = document.getElementById('btn-copy-result');
+    const btnClearAll = document.getElementById('btn-clear-all'); // 追加
 
     // 結果コピーボタン
     btnCopyResult.addEventListener('click', async () => {
@@ -284,6 +286,15 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             showStatus('コピー失敗');
         }
+    });
+
+    // 全てクリアボタン
+    btnClearAll.addEventListener('click', () => {
+        editor.value = '';
+        instructionEditor.value = '140文字以内で回答してください'; // 初期値に戻す
+        resultEditor.value = '';
+        lastConversation = null; // 履歴もリセット
+        showStatus('クリアしました');
     });
 
     // ショートカットキーの実装 (Ctrl+Enter or Cmd+Enter)
@@ -414,6 +425,7 @@ ${instruction}
             }
         } catch (error) {
             console.error(error);
+            alert("詳細エラー: " + error.message); // デバッグ用アラート
             resultEditor.value = "エラーが発生しました";
             showStatus('エラー: ' + error.message, 0, true);
         } finally {
