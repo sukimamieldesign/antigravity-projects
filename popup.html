@@ -21,7 +21,8 @@
 
       <div class="ai-tools">
         <select id="ai-mode">
-          <option value="x_post">🐦 X投稿作成</option>
+          <option value="x_post">🐦 X投稿 (#it祈祷師)</option>
+          <option value="x_post_genba">🏢 X投稿 (#現場からは以上です)</option>
           <option value="free_ask">🤖 自由質問 (素通し)</option>
           <option value="fix_grammar">誤字脱字・文法修正</option>
           <option value="polite">丁寧な言葉遣いに</option>
@@ -29,7 +30,7 @@
           <option value="translate_en">英語に翻訳</option>
           <option value="translate_ja">日本語に翻訳</option>
         </select>
-        <button id="btn-ai-run" class="ai-btn">✨ AI修正</button>
+        <button id="btn-ai-run" class="ai-btn">✨ AI生成</button>
       </div>
 
       <textarea id="editor" placeholder="【入力文】ここに元のテキストを入力..."></textarea>
@@ -38,13 +39,13 @@
 
       <div class="output-area">
         <div class="output-header">
-          <label>AI修正結果:</label>
+          <label>生成結果:</label>
           <div class="button-group">
             <button id="btn-clear-all" class="icon-btn" title="全てクリア">🗑️</button>
             <button id="btn-copy-result" class="icon-btn" title="結果をコピー">📋</button>
           </div>
         </div>
-        <textarea id="result-editor" placeholder="ここに修正結果が表示されます..." readonly></textarea>
+        <textarea id="result-editor" placeholder="ここに生成結果が表示されます..." readonly></textarea>
       </div>
       <div id="captured-images"></div>
       <div class="actions">

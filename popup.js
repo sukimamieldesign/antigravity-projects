@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     editor.addEventListener('keydown', handleShortcut);
     instructionEditor.addEventListener('keydown', handleShortcut);
+    aiModeSelect.addEventListener('keydown', handleShortcut); // プルダウンでも実行可能に
 
     // 直前の会話履歴を保持する変数（素通しモード用）
     let lastConversation = null;
@@ -356,6 +357,32 @@ document.addEventListener('DOMContentLoaded', () => {
 - 適切な改行を入れること
 - 以下のハッシュタグを文末に必ず含めること
   - #it祈祷師
+
+【入力文】:
+${text}
+
+【追加指示】:
+${instruction}
+
+出力は投稿文のみにしてください。
+`.trim();
+                break;
+            case "x_post_genba":
+                prompt = `
+あなたは以下の【投稿スタイル】を持つユーザーの専属ライターです。
+【入力文】を元に、このユーザーらしいX（旧Twitter）の投稿文を作成してください。
+【追加指示】があれば、それも反映してください。
+
+# 投稿スタイル
+- 現場の課題やリアリティを的確に切り取る
+- 綺麗事ではなく、実務的な視点で事象を捉える
+- 読者が「あるある」「わかる」と共感できるような口調
+- 基本的な文体は「です・ます」調などで、丁寧かつフラットに
+
+# 制約事項
+- 140文字以内に収めること
+- 適切な改行を入れること
+- 以下のハッシュタグを文末に必ず含めること
   - #現場からは以上です
 
 【入力文】:
@@ -410,7 +437,7 @@ ${instruction}
             const result = await callGeminiApi(geminiApiKey, prompt, history);
             if (result) {
                 resultEditor.value = result; // 結果エリアに表示
-                showStatus('AI修正完了！');
+                showStatus('AI生成完了！');
 
                 // 素通しモードなら、今回のやり取りを履歴として保存
                 if (mode === "free_ask") {
