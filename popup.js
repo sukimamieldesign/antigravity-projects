@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ユーティリティ: ステータス表示
-    const showStatus = (msg, duration = 2000, isError = false) => {
+    const showStatus = (msg, duration = 9999, isError = false) => {
         status.textContent = msg;
         status.style.color = isError ? '#ff6b6b' : '#888'; // エラーなら赤色
 
@@ -25,14 +25,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 1. ポップアップを開いた時に、自動で選択範囲を取得を試みる
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: "getSelection" }, (response) => {
-                if (chrome.runtime.lastError) {
-                    // エラーは無視（Content Scriptがまだロードされていないページなど）
-                    return;
+    // ターゲットタブを特定する関数
+    const getTargetTab = (callback) => {
+        // 1. まずは現在のウィンドウのアクティブタブを確認
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const currentTab = tabs[0];
+
+            // 拡張機能のページ自体でないなら、それがターゲット（サイドパネル利用時など）
+            if (currentTab && !currentTab.url.startsWith('chrome-extension://')) {
+                callback(currentTab);
+                return;
+            }
+
+            // 2. 自分が拡張機能ページなら、Background Scriptに直前のタブIDを聞く
+            chrome.runtime.sendMessage({ action: "getLastTabId" }, (response) => {
+                if (response && response.tabId) {
+                    chrome.tabs.get(response.tabId, (tab) => {
+                        if (chrome.runtime.lastError) {
+                            // タブが既に閉じられている場合など
+                            callback(null);
+                        } else {
+                            callback(tab);
+                        }
+                    });
+                } else {
+                    callback(null);
                 }
+            });
+        });
+    };
+
+    // 1. ポップアップを開いた時に、自動で選択範囲を取得を試みる
+    getTargetTab((tab) => {
+        if (tab) {
+            chrome.tabs.sendMessage(tab.id, { action: "getSelection" }, (response) => {
+                if (chrome.runtime.lastError) return;
                 if (response && response.text) {
                     editor.value = response.text;
                     showStatus('選択テキストを取得しました');
@@ -43,8 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ボタン: 選択範囲を再取得
     btnGetSelection.addEventListener('click', () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, { action: "getSelection" }, (response) => {
+        getTargetTab((tab) => {
+            if (!tab) {
+                showStatus('対象のタブが見つかりません');
+                return;
+            }
+            chrome.tabs.sendMessage(tab.id, { action: "getSelection" }, (response) => {
                 if (chrome.runtime.lastError) {
                     showStatus('エラー: ページをリロードしてください');
                     return;
@@ -69,14 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            // タブが見つからない場合
-            if (!tabs || tabs.length === 0) {
+        getTargetTab((tab) => {
+            if (!tab) {
                 showStatus('対象のタブが見つかりません');
                 return;
             }
 
-            chrome.tabs.sendMessage(tabs[0].id, {
+            chrome.tabs.sendMessage(tab.id, {
                 action: "pasteText",
                 text: textToPaste
             }, (response) => {
@@ -102,9 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // capturedImagesContainerは冒頭で宣言済み（にする）
 
     btnCapture.addEventListener('click', () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (!tabs[0]) return;
-            chrome.tabs.sendMessage(tabs[0].id, { action: "startCapture" }, () => {
+        getTargetTab((tab) => {
+            if (!tab) {
+                showStatus('キャプチャ対象が見つかりません');
+                return;
+            }
+            chrome.tabs.sendMessage(tab.id, { action: "startCapture" }, () => {
                 if (chrome.runtime.lastError) {
                     showStatus('エラー: ページをリロードしてください');
                 } else {
@@ -218,26 +251,23 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation(); // 画像クリック（コピー）の発火を防ぐ
 
             // アクティブなタブを探して送信
-            chrome.windows.getLastFocused((window) => {
-                if (!window) return;
-                chrome.tabs.query({ active: true, windowId: window.id }, (tabs) => {
-                    if (!tabs[0]) {
-                        showStatus('タブが見つかりません');
-                        return;
-                    }
+            getTargetTab((tab) => {
+                if (!tab) {
+                    showStatus('タブが見つかりません');
+                    return;
+                }
 
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        action: "pasteImage",
-                        dataUrl: dataUrl
-                    }, (response) => {
-                        if (chrome.runtime.lastError) {
-                            showStatus('エラー: ページをリロードしてください');
-                        } else if (response && response.success) {
-                            showStatus('画像を貼り付けました！');
-                        } else {
-                            showStatus('失敗: リッチテキスト入力欄を選択してください', 3000);
-                        }
-                    });
+                chrome.tabs.sendMessage(tab.id, {
+                    action: "pasteImage",
+                    dataUrl: dataUrl
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        showStatus('エラー: ページをリロードしてください');
+                    } else if (response && response.success) {
+                        showStatus('画像を貼り付けました！');
+                    } else {
+                        showStatus('失敗: リッチテキスト入力欄を選択してください', 3000);
+                    }
                 });
             });
         };
