@@ -351,14 +351,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // APIキーの取得
-        const { geminiApiKey } = await chrome.storage.local.get('geminiApiKey');
+        // APIキーとモデル名の取得
+        const { geminiApiKey, geminiModel } = await chrome.storage.local.get(['geminiApiKey', 'geminiModel']);
         if (!geminiApiKey) {
             showStatus('設定画面でAPIキーを設定してください', 3000);
             // オプションページを開く
             chrome.runtime.openOptionsPage();
             return;
         }
+
+        // モデル名が未設定ならデフォルトを使用
+        const selectedModel = geminiModel || "gemini-2.5-flash";
 
         const mode = aiModeSelect.value;
         let prompt = "";
@@ -385,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
 # 制約事項
 - 140文字以内に収めること
 - 適切な改行を入れること
+- 【入力文】の中にある「」や""で囲まれた部分は、変更せずにそのまま使用すること
 - 以下のハッシュタグを文末に必ず含めること
   - #it祈祷師
 
@@ -412,6 +416,7 @@ ${instruction}
 # 制約事項
 - 140文字以内に収めること
 - 適切な改行を入れること
+- 【入力文】の中にある「」や""で囲まれた部分は、変更せずにそのまま使用すること
 - 以下のハッシュタグを文末に必ず含めること
   - #現場からは以上です
 
@@ -464,7 +469,7 @@ ${instruction}
 
         try {
             // 履歴(history)も渡すように変更
-            const result = await callGeminiApi(geminiApiKey, prompt, history);
+            const result = await callGeminiApi(geminiApiKey, selectedModel, prompt, history);
             if (result) {
                 resultEditor.value = result; // 結果エリアに表示
                 showStatus('AI生成完了！');
@@ -492,9 +497,9 @@ ${instruction}
     });
 
     // history引数を追加
-    async function callGeminiApi(apiKey, prompt, history = []) {
-        // ユーザー指定のモデルに変更
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    async function callGeminiApi(apiKey, modelName, prompt, history = []) {
+        // ユーザー指定のモデルを使用
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
         // 現在のプロンプトをメッセージ形式に変換
         const currentMessage = {

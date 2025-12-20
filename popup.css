@@ -82,7 +82,16 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .output-header label {
